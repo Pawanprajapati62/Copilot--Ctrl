@@ -1,20 +1,29 @@
 # Remap Copilot Key to Right Ctrl (AutoHotkey v2)
 
-This repository contains a fully working **AutoHotkey v2** script that transforms the Windows **Copilot key** into a functional **Right Ctrl** key.  
-This is useful because many laptops map the Copilot key internally as:
+This repo shows how to turn the **Copilot key** on a Windows laptop into a **Right Ctrl** key using **AutoHotkey v2**.
 
-```
-Win + Shift + F23
-```
+The script is made for the case where the Copilot key sends:  
+`Win + Shift + F23`  
+(That’s what it does on my machine, checked via AutoHotkey’s key history.)
 
-This causes major issues when trying to use it as a Ctrl modifier, especially inside browsers, where shortcuts accidentally become:
+---
 
-- `Ctrl + Shift + C`
-- `Ctrl + Shift + Backspace`
-- Text gets selected instead of moving by word
-- Browser copies the URL instead of selected text
+## What this script does
 
-This script fixes all of that cleanly.
+- When you **hold the Copilot key**, it behaves like **Right Ctrl**.
+- So:
+  - `Copilot + C` → works like `Ctrl + C`
+  - `Copilot + V` → works like `Ctrl + V`
+  - `Copilot + Backspace` → works like `Ctrl + Backspace`
+  - `Copilot + Arrow keys` → works like `Ctrl + Arrow` (jump word by word)
+
+- It also fixes an annoying issue where the Copilot key was acting like:
+  - `Ctrl + Shift + C`
+  - `Ctrl + Shift + Backspace`
+  - etc.
+
+  That happened because **Win + Shift** stayed “held down” in the background.  
+  The script explicitly **releases Win and Shift** before pressing Right Ctrl.
 
 ---
 
@@ -39,25 +48,42 @@ This script fixes all of that cleanly.
 
 ---
 
+## Check what your Copilot key sends
+
+You can check it like this:
+
+1. Create and run a simple AutoHotkey v2 script (`test.ahk`):
+   ```ahk
+   #Requires AutoHotkey v2.0
+   KeyHistory()
+   ```
+2. Press the **Copilot key** a few times.
+3. Open the **AutoHotkey icon** in the system tray → **Open** → press **Ctrl + K**.
+4. Look at the last few lines.
+
+On my system, pressing the Copilot key produced: `LWin`, `LShift`, `F23`.
+
+---
+
 ## 📜 Script (remap.ahk)
 
 ```ahk
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-; Optional: Ctrl + Shift + Alt + R reloads this script
+; optional: Ctrl + Shift + Alt + R reloads this script
 ^+!r::Reload()
 
-; Remap the Copilot key (Win + Shift + F23) to behave like Right Ctrl
+; remap the Copilot key (Win + Shift + F23) to behave like Right Ctrl
 *<+<#F23::
 {
-    ; Release Shift + Win so they don’t interfere (fixes Ctrl+Shift issue)
+    ; release Shift + Win so they don’t interfere (fixes Ctrl+Shift issue)
     Send("{Blind}{LShift up}{LWin up}{RControl down}")
 
-    ; Wait until the Copilot/F23 key is released
+    ; wait until the copilot key is released
     KeyWait("F23")
 
-    ; Then release Right Ctrl
+    ; then release rtCtrl
     Send("{RControl up}")
 }
 ```
